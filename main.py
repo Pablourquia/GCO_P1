@@ -25,7 +25,7 @@ def leer_matriz_desde_archivo(nombre_archivo):
 
     return calificacion_minima, calificacion_maxima, matriz
 
-def calcular_coeficiente_de_correlacion(array1, array2):
+def quitar_guiones(array1, array2):
     # Crear nuevas listas sin guiones y valores correspondientes en ambos arrays
     valores_array1 = []
     valores_array2 = []
@@ -34,6 +34,11 @@ def calcular_coeficiente_de_correlacion(array1, array2):
         if val1 != '-' and val2 != '-':
             valores_array1.append(float(val1))
             valores_array2.append(float(val2))
+    return valores_array1, valores_array2
+
+def calcular_coeficiente_de_correlacion(array1, array2):
+    
+    valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
     media_cal_a1 = sum(valores_array1) / len(valores_array1)
     media_cal_a2 = sum(valores_array2) / len(valores_array2)
@@ -54,31 +59,19 @@ def calcular_coeficiente_de_correlacion(array1, array2):
     coefiente_pearson = num / denom
     return coefiente_pearson
 
-def calcular_distancia_euclídea(array1, array2):
-    # Crear nuevas listas sin guiones y valores correspondientes en ambos arrays
-    valores_array1 = []
-    valores_array2 = []
-
-    for val1, val2 in zip(array1, array2):
-        if val1 != '-' and val2 != '-':
-            valores_array1.append(float(val1))
-            valores_array2.append(float(val2))
+def calcular_similitud_distancia_euclídea(array1, array2):
+    
+    valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
     suma = 0.0
     for val1, val2 in zip(valores_array1, valores_array2):
         suma += pow((val1 - val2), 2)
     distancia_euclídea = math.sqrt(suma)
-    return distancia_euclídea
+    return 1 / distancia_euclídea
 
 def calcular_similitud_coseno(array1, array2):
-    #Crear nuevas listas sin guiones y valores correspondientes en ambos arrays
-    valores_array1 = []
-    valores_array2 = []
-
-    for val1, val2 in zip(array1, array2):
-        if val1 != '-' and val2 != '-':
-            valores_array1.append(float(val1))
-            valores_array2.append(float(val2))
+    
+    valores_array1, valores_array2 = quitar_guiones(array1, array2)
     
     num = 0.0
     for val1, val2 in zip(valores_array1, valores_array2):
@@ -96,6 +89,45 @@ def calcular_similitud_coseno(array1, array2):
     similitud_coseno = num / denom
     return similitud_coseno    
 
+def calular_similitud_matriz(matriz, tipo_similitud, posicion, cantidad_vecinos):
+    array_similitudes = []
+    # calculo de las similiudes con el resto de usuarios
+    if tipo_similitud == 1:
+        for fila in matriz:
+            array_similitudes.append(calcular_coeficiente_de_correlacion(matriz[posicion[0]], fila))
+    elif tipo_similitud == 2:
+        for fila in matriz:
+            array_similitudes.append(calcular_similitud_coseno(matriz[posicion[0]], fila))
+    elif tipo_similitud == 3:
+        for fila in matriz:
+            array_similitudes.append(calcular_similitud_distancia_euclídea(matriz[posicion[0]], fila))
+    
+    # k mayores similitudes en otro vector junto con la posicion que ocupan
+    array_mayores = []
+    for i in range(cantidad_vecinos):
+        mayor = max(array_similitudes)
+        array_mayores.append((mayor, array_similitudes.index(mayor)))
+        array_similitudes.remove(mayor)
+
+    return array_mayores
+
+def calcular_prediccion_simple(matriz, cantidad_vecinos, posicion, tipo_similitud):
+    
+    array_mayores = calular_similitud_matriz(matriz, tipo_similitud, posicion, cantidad_vecinos)
+
+    # calculo de la prediccion
+    denom = 0.0
+    for i in range(array_mayores):
+        denom += abs(array_mayores[i][0])
+
+    num = 0.0
+    for i in range(array_mayores):
+        num += (array_mayores[i][0] * matriz[array_mayores[i][1]][posicion[1]])
+    
+    prediccion = num / denom
+    return prediccion
+
+#def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tipo_similitud):
     
 
 
@@ -142,5 +174,5 @@ print(calificacion_maxima)
 print(calificacion_minima)
 
 print(calcular_coeficiente_de_correlacion(matriz[0], matriz[1]))
-print(calcular_distancia_euclídea(matriz[0], matriz[1]))
+print(calcular_similitud_distancia_euclídea(matriz[0], matriz[1]))
 print(calcular_similitud_coseno(matriz[0], matriz[1]))
