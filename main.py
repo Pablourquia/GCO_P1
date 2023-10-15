@@ -2,6 +2,8 @@ import math
 import argparse
 
 # Función para leer la matriz desde un archivo
+
+
 def leer_matriz_desde_archivo(nombre_archivo):
     matriz = []
 
@@ -25,6 +27,7 @@ def leer_matriz_desde_archivo(nombre_archivo):
 
     return calificacion_minima, calificacion_maxima, matriz
 
+
 def quitar_guiones(array1, array2):
     # Crear nuevas listas sin guiones y valores correspondientes en ambos arrays
     valores_array1 = []
@@ -36,18 +39,19 @@ def quitar_guiones(array1, array2):
             valores_array2.append(float(val2))
     return valores_array1, valores_array2
 
+
 def calcular_coeficiente_de_correlacion(array1, array2):
-    
+
     valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
     media_cal_a1 = sum(valores_array1) / len(valores_array1)
     media_cal_a2 = sum(valores_array2) / len(valores_array2)
-    
+
     num = 0.0
-    for val1,val2 in zip(valores_array1, valores_array2):
+    for val1, val2 in zip(valores_array1, valores_array2):
         num += ((val1 - media_cal_a1) * (val2 - media_cal_a2))
-    
-    denom1  = 0.0
+
+    denom1 = 0.0
     for val1 in valores_array1:
         resta = val1 - media_cal_a1
         denom1 = denom1 + pow(resta, 2)
@@ -59,91 +63,154 @@ def calcular_coeficiente_de_correlacion(array1, array2):
     coefiente_pearson = num / denom
     return coefiente_pearson
 
+
 def calcular_similitud_distancia_euclídea(array1, array2):
-    
+
     valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
     suma = 0.0
     for val1, val2 in zip(valores_array1, valores_array2):
         suma += pow((val1 - val2), 2)
-    distancia_euclídea = math.sqrt(suma)
-    return 1 / distancia_euclídea
+    distancia_euclidea = math.sqrt(suma)
+    return distancia_euclidea
+
 
 def calcular_similitud_coseno(array1, array2):
-    
+
     valores_array1, valores_array2 = quitar_guiones(array1, array2)
-    
-    num = 0.0
+
+    numerador = 0.0
     for val1, val2 in zip(valores_array1, valores_array2):
-        num += (val1 * val2)
+        numerador += (val1 * val2)
 
-    denom1 = 0.0
+    denominador1 = 0.0
     for val1 in valores_array1:
-        denom1 += pow(val1, 2)
+        denominador1 += pow(val1, 2)
+    denominador1 = math.sqrt(denominador1)
 
-    denom2 = 0.0
+    denominador2 = 0.0
     for val2 in valores_array2:
-        denom2 += pow(val2, 2)
+        denominador2 += pow(val2, 2)
+    denominador2 = math.sqrt(denominador2)
 
-    denom = math.sqrt(denom1) * math.sqrt(denom2)
-    similitud_coseno = num / denom
-    return similitud_coseno    
+    denominador = denominador1 * denominador2
+    similitud_coseno = numerador / denominador
+    return similitud_coseno
 
-def calular_similitud_matriz(matriz, tipo_similitud, posicion, cantidad_vecinos):
-    array_similitudes = []
-    # calculo de las similiudes con el resto de usuarios
-    if tipo_similitud == 1:
-        for fila in matriz:
-            array_similitudes.append(calcular_coeficiente_de_correlacion(matriz[posicion[0]], fila))
-    elif tipo_similitud == 2:
-        for fila in matriz:
-            array_similitudes.append(calcular_similitud_coseno(matriz[posicion[0]], fila))
-    elif tipo_similitud == 3:
-        for fila in matriz:
-            array_similitudes.append(calcular_similitud_distancia_euclídea(matriz[posicion[0]], fila))
-    
-    # k mayores similitudes en otro vector junto con la posicion que ocupan
-    array_mayores = []
-    for i in range(cantidad_vecinos):
-        mayor = max(array_similitudes)
-        array_mayores.append((mayor, array_similitudes.index(mayor)))
-        array_similitudes.remove(mayor)
-
-    return array_mayores
 
 def calcular_prediccion_simple(matriz, cantidad_vecinos, posicion, tipo_similitud):
-    
-    array_mayores = calular_similitud_matriz(matriz, tipo_similitud, posicion, cantidad_vecinos)
 
-    # calculo de la prediccion
-    denom = 0.0
-    for i in range(array_mayores):
-        denom += abs(array_mayores[i][0])
+    lista_tuplas = []
+    if tipo_similitud == 1:
+        for i in range(len(matriz)):
+            if matriz[i][posicion[1]] != '-':
+                lista_tuplas.append(
+                    (calcular_coeficiente_de_correlacion(matriz[posicion[0]], matriz[i]), i))
 
-    num = 0.0
-    for i in range(array_mayores):
-        num += (array_mayores[i][0] * matriz[array_mayores[i][1]][posicion[1]])
-    
-    prediccion = num / denom
+    elif tipo_similitud == 2:
+
+        for i in range(len(matriz)):
+            if matriz[i][posicion[1]] != '-':
+                lista_tuplas.append(
+                    (calcular_similitud_coseno(matriz[posicion[0]], matriz[i]), i))
+
+    elif tipo_similitud == 3:
+
+        for i in range(len(matriz)):
+            if matriz[i][posicion[1]] != '-':
+                lista_tuplas.append(
+                    (calcular_similitud_distancia_euclídea(matriz[posicion[0]], matriz[i]), i))
+
+    # Ordenar la lista de tuplas por similitud
+    lista_tuplas.sort(reverse=True)
+
+    # Tomar los primeros k vecinos
+    lista_tuplas = lista_tuplas[:cantidad_vecinos]
+
+    # Calcular la calificación predicha
+
+    numerador = 0.0
+    denominador = 0.0
+    for tupla in lista_tuplas:
+        numerador += tupla[0] * float(matriz[tupla[1]][posicion[1]])
+        denominador += tupla[0]
+    prediccion = numerador / denominador
     return prediccion
 
-#def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tipo_similitud):
-    
 
+def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tipo_similitud):
+
+    lista_tuplas = []
+    if tipo_similitud == 1:
+        for i in range(len(matriz)):
+            if matriz[i][posicion[1]] != '-':
+                lista_tuplas.append(
+                    (calcular_coeficiente_de_correlacion(matriz[posicion[0]], matriz[i]), i))
+
+    elif tipo_similitud == 2:
+
+        for i in range(len(matriz)):
+            if matriz[i][posicion[1]] != '-':
+                lista_tuplas.append(
+                    (calcular_similitud_coseno(matriz[posicion[0]], matriz[i]), i))
+
+    elif tipo_similitud == 3:
+
+        for i in range(len(matriz)):
+            if matriz[i][posicion[1]] != '-':
+                lista_tuplas.append(
+                    (calcular_similitud_distancia_euclídea(matriz[posicion[0]], matriz[i]), i))
+
+    # Ordenar la lista de tuplas por similitud
+    lista_tuplas.sort(reverse=True)
+
+    # Tomar los primeros k vecinos
+    lista_tuplas = lista_tuplas[:cantidad_vecinos]
+
+    # Calcular la calificación predicha
+
+    numerador = 0.0
+    denominador = 0.0
+    for tupla in lista_tuplas:
+        numerador += tupla[0] * (float(matriz[tupla[1]][posicion[1]]) -
+                                 calcular_media_usuario(matriz[tupla[1]]))
+        denominador += tupla[0]
+    prediccion = calcular_media_usuario(
+        matriz[posicion[0]]) + (numerador / denominador)
+    return prediccion
+
+
+def calcular_media_usuario(array):
+    valores_array = []
+    for val in array:
+        if val != '-':
+            valores_array.append(float(val))
+    media = sum(valores_array) / len(valores_array)
+    return media
 
 # Función para imprimir la matriz
+
+
 def imprimir_matriz(matriz):
     for fila in matriz:
         print(' '.join(map(str, fila)))
 
+
 # Crear un objeto ArgumentParser
-parser = argparse.ArgumentParser(description='Procesar archivos de entrada y salida.')
+parser = argparse.ArgumentParser(
+    description='Procesar archivos de entrada y salida.')
 
 # Agregar argumentos de línea de comandos
-parser.add_argument('-i', '--input', type=str, required=True, help='Nombre del archivo de entrada')
-parser.add_argument('-o', '--output', type=str, required=True, help='Nombre del archivo de salida')
-parser.add_argument('-v', '--neighbour', type=int, required=True, help='Cantidad de vecinos (entero)')
-parser.add_argument('-t', '--type', type=int, choices=[1, 2], required=True, help='Tipo de prediccion (1 -> prediccion simple o 2 -> diferencia con la media)')
+parser.add_argument('-i', '--input', type=str, required=True,
+                    help='Nombre del archivo de entrada')
+parser.add_argument('-o', '--output', type=str, required=True,
+                    help='Nombre del archivo de salida')
+parser.add_argument('-m', '--metrica', type=int, choices=[1, 2, 3], required=True,
+                    help='Métrica de similitud (1 -> coeficiente de correlación de Pearson, 2 -> similitud del coseno, 3 -> distancia euclídea)')
+parser.add_argument('-v', '--neighbour', type=int,
+                    required=True, help='Cantidad de vecinos (entero)')
+parser.add_argument('-t', '--type', type=int, choices=[1, 2], required=True,
+                    help='Tipo de prediccion (1 -> prediccion simple o 2 -> diferencia con la media)')
 
 # Analizar los argumentos
 args = parser.parse_args()
@@ -155,24 +222,47 @@ nombre_archivo_salida = args.output
 # Acceder a los vecinos y el tipo de prediccion
 cantidad_vecinos = args.neighbour
 tipo_prediccion = args.type
+metrica = args.metrica
 
 # Ahora puedes usar nombre_archivo_entrada y nombre_archivo_salida en tu programa
 print(f"Nombre de archivo de entrada: {nombre_archivo_entrada}")
 print(f"Nombre de archivo de salida: {nombre_archivo_salida}")
 
 # Ahora puedes usar cantidad_vecinos y tipo_prediccion en tu programa
+print(f"Métrica de similitud: {metrica}")
 print(f"Cantidad de vecinos: {cantidad_vecinos}")
 print(f"Tipo de prediccion: {tipo_prediccion}")
 
 # Leer la matriz desde el archivo
-calificacion_minima, calificacion_maxima, matriz = leer_matriz_desde_archivo(nombre_archivo_entrada)
+calificacion_minima, calificacion_maxima, matriz = leer_matriz_desde_archivo(
+    nombre_archivo_entrada)
 
 # Imprimo la matriz y las calificaciones
 
-imprimir_matriz(matriz)
 print(calificacion_maxima)
 print(calificacion_minima)
+imprimir_matriz(matriz)
 
-print(calcular_coeficiente_de_correlacion(matriz[0], matriz[1]))
-print(calcular_similitud_distancia_euclídea(matriz[0], matriz[1]))
-print(calcular_similitud_coseno(matriz[0], matriz[1]))
+print("matriz prediccion")
+# Calcular la prediccion para cada valor desconocido como float de 3 decimales y reemplazarlo en la matriz
+
+for i in range(len(matriz)):
+    for j in range(len(matriz[i])):
+        if matriz[i][j] == '-':
+            if tipo_prediccion == 1:
+                matriz[i][j] = round(calcular_prediccion_simple(
+                    matriz, cantidad_vecinos, (i, j), metrica), 2)
+            elif tipo_prediccion == 2:
+                matriz[i][j] = round(calcular_prediccion_diferencia_media(
+                    matriz, cantidad_vecinos, (i, j), metrica), 2)
+
+
+# Escribir la matriz en la consola
+imprimir_matriz(matriz)
+
+# Escribir la matriz en el archivo de salida
+with open(nombre_archivo_salida, 'w') as archivo:
+    archivo.write(str(calificacion_minima) + '\n')
+    archivo.write(str(calificacion_maxima) + '\n')
+    for fila in matriz:
+        archivo.write(' '.join(map(str, fila)) + '\n')
