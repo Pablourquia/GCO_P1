@@ -128,12 +128,12 @@ def calcular_prediccion_simple(matriz, cantidad_vecinos, posicion, tipo_similitu
     lista_tuplas = lista_tuplas[:cantidad_vecinos]
 
     # Calcular la calificación predicha
-
     numerador = 0.0
     denominador = 0.0
     for tupla in lista_tuplas:
         numerador += tupla[0] * float(matriz[tupla[1]][posicion[1]])
-        denominador += tupla[0]
+        denominador += abs(tupla[0])
+
     prediccion = numerador / denominador
     return prediccion
 
@@ -174,7 +174,7 @@ def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tip
     for tupla in lista_tuplas:
         numerador += tupla[0] * (float(matriz[tupla[1]][posicion[1]]) -
                                  calcular_media_usuario(matriz[tupla[1]]))
-        denominador += tupla[0]
+        denominador += abs(tupla[0])
     prediccion = calcular_media_usuario(
         matriz[posicion[0]]) + (numerador / denominador)
     return prediccion
