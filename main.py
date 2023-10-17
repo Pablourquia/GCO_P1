@@ -2,8 +2,6 @@ import math
 import argparse
 
 # Función para leer la matriz desde un archivo
-
-
 def leer_matriz_desde_archivo(nombre_archivo):
     matriz = []
 
@@ -21,6 +19,11 @@ def leer_matriz_desde_archivo(nombre_archivo):
             fila = []
 
             for x in valores:
+                print(x)
+                if x != "-":
+                    aux = float(x)
+                    if aux < calificacion_minima or aux > calificacion_maxima:
+                        raise ValueError(f"Error: El valor {aux} no está dentro del rango permitido ({calificacion_minima} - {calificacion_maxima})")
                 fila.append(x)  # Guarde el valor tal como está en la matriz
 
             matriz.append(fila)
