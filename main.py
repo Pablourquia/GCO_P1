@@ -19,7 +19,6 @@ def leer_matriz_desde_archivo(nombre_archivo):
             fila = []
 
             for x in valores:
-                print(x)
                 if x != "-":
                     aux = float(x)
                     if aux < calificacion_minima or aux > calificacion_maxima:
@@ -182,6 +181,26 @@ def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tip
         matriz[posicion[0]]) + (numerador / denominador)
     return prediccion
 
+def normalizar_matriz(matriz, minima, maxima):
+    print ("minima: ", minima)
+    print ("maxima: ", maxima)
+
+    for i in range(len(matriz)):
+        for j in range(len(matriz[i])):
+            if matriz[i][j] != '-':
+                valor = float(matriz[i][j])
+                matriz[i][j] = str((valor - minima) / (maxima - minima))
+
+    return matriz
+
+def desnormalizar_matriz(matriz):
+    for i in range(len(matriz)):
+        for j in range(len(matriz[i])):
+            if matriz[i][j] != '-':
+                valor = float(matriz[i][j])
+                matriz[i][j] = str((valor * (calificacion_maxima - calificacion_minima)) + calificacion_minima)
+
+    return matriz
 
 def calcular_media_usuario(array):
     valores_array = []
@@ -249,16 +268,22 @@ imprimir_matriz(matriz)
 print("matriz prediccion")
 # Calcular la prediccion para cada valor desconocido como float de 3 decimales y reemplazarlo en la matriz
 
+matriz = normalizar_matriz(matriz, calificacion_minima , calificacion_maxima)
+print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+imprimir_matriz(matriz)
+print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
 for i in range(len(matriz)):
     for j in range(len(matriz[i])):
         if matriz[i][j] == '-':
             if tipo_prediccion == 1:
                 matriz[i][j] = round(calcular_prediccion_simple(
-                    matriz, cantidad_vecinos, (i, j), metrica), 2)
+                    matriz, cantidad_vecinos, (i, j), metrica), 5)
             elif tipo_prediccion == 2:
                 matriz[i][j] = round(calcular_prediccion_diferencia_media(
-                    matriz, cantidad_vecinos, (i, j), metrica), 2)
+                    matriz, cantidad_vecinos, (i, j), metrica), 5)
 
+matriz = desnormalizar_matriz(matriz)
 
 # Escribir la matriz en la consola
 imprimir_matriz(matriz)
