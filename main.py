@@ -43,102 +43,108 @@ def quitar_guiones(array1, array2):
 
 
 def calcular_coeficiente_de_correlacion(array1, array2):
+    try:
+        valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
-    valores_array1, valores_array2 = quitar_guiones(array1, array2)
+        media_cal_a1 = sum(valores_array1) / len(valores_array1)
+        media_cal_a2 = sum(valores_array2) / len(valores_array2)
 
-    media_cal_a1 = sum(valores_array1) / len(valores_array1)
-    media_cal_a2 = sum(valores_array2) / len(valores_array2)
+        num = 0.0
+        for val1, val2 in zip(valores_array1, valores_array2):
+            num += ((val1 - media_cal_a1) * (val2 - media_cal_a2))
 
-    num = 0.0
-    for val1, val2 in zip(valores_array1, valores_array2):
-        num += ((val1 - media_cal_a1) * (val2 - media_cal_a2))
-
-    denom1 = 0.0
-    for val1 in valores_array1:
-        resta = val1 - media_cal_a1
-        denom1 = denom1 + pow(resta, 2)
-    denom2 = 0.0
-    for val2 in valores_array2:
-        resta = val2 - media_cal_a2
-        denom2 = denom2 + pow(resta, 2)
-    denom = math.sqrt(denom1) * math.sqrt(denom2)
-    coefiente_pearson = num / denom
-    return coefiente_pearson
-
+        denom1 = 0.0
+        for val1 in valores_array1:
+            resta = val1 - media_cal_a1
+            denom1 = denom1 + pow(resta, 2)
+        denom2 = 0.0
+        for val2 in valores_array2:
+            resta = val2 - media_cal_a2
+            denom2 = denom2 + pow(resta, 2)
+        denom = math.sqrt(denom1) * math.sqrt(denom2)
+        coefiente_pearson = num / denom
+        return coefiente_pearson
+    
+    except Exception as e:
+        raise ValueError("Valores insuficientes en la matriz para realizar la predicción error code:001") from e
 
 def calcular_similitud_distancia_euclídea(array1, array2):
+    try:
+        valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
-    valores_array1, valores_array2 = quitar_guiones(array1, array2)
-
-    suma = 0.0
-    for val1, val2 in zip(valores_array1, valores_array2):
-        suma += pow((val1 - val2), 2)
-    distancia_euclidea = math.sqrt(suma)
-    return distancia_euclidea
-
+        suma = 0.0
+        for val1, val2 in zip(valores_array1, valores_array2):
+            suma += pow((val1 - val2), 2)
+        distancia_euclidea = math.sqrt(suma)
+        return distancia_euclidea
+    except Exception as e:
+        raise ValueError("Valores insuficientes en la matriz para realizar la predicción error code:003") from e
 
 def calcular_similitud_coseno(array1, array2):
+    try:
+        valores_array1, valores_array2 = quitar_guiones(array1, array2)
 
-    valores_array1, valores_array2 = quitar_guiones(array1, array2)
+        numerador = 0.0
+        for val1, val2 in zip(valores_array1, valores_array2):
+            numerador += (val1 * val2)
 
-    numerador = 0.0
-    for val1, val2 in zip(valores_array1, valores_array2):
-        numerador += (val1 * val2)
+        denominador1 = 0.0
+        for val1 in valores_array1:
+            denominador1 += pow(val1, 2)
+        denominador1 = math.sqrt(denominador1)
 
-    denominador1 = 0.0
-    for val1 in valores_array1:
-        denominador1 += pow(val1, 2)
-    denominador1 = math.sqrt(denominador1)
+        denominador2 = 0.0
+        for val2 in valores_array2:
+            denominador2 += pow(val2, 2)
+        denominador2 = math.sqrt(denominador2)
 
-    denominador2 = 0.0
-    for val2 in valores_array2:
-        denominador2 += pow(val2, 2)
-    denominador2 = math.sqrt(denominador2)
-
-    denominador = denominador1 * denominador2
-    similitud_coseno = numerador / denominador
-    return similitud_coseno
-
+        denominador = denominador1 * denominador2
+        similitud_coseno = numerador / denominador
+        return similitud_coseno
+    except Exception as e:
+        raise ValueError("Valores insuficientes en la matriz para realizar la predicción error code:002") from e
 
 def calcular_prediccion_simple(matriz, cantidad_vecinos, posicion, tipo_similitud):
+    try:
+        lista_tuplas = []
+        if tipo_similitud == 1:
+            for i in range(len(matriz)):
+                if matriz[i][posicion[1]] != '-':
+                    lista_tuplas.append(
+                        (calcular_coeficiente_de_correlacion(matriz[posicion[0]], matriz[i]), i))
 
-    lista_tuplas = []
-    if tipo_similitud == 1:
-        for i in range(len(matriz)):
-            if matriz[i][posicion[1]] != '-':
-                lista_tuplas.append(
-                    (calcular_coeficiente_de_correlacion(matriz[posicion[0]], matriz[i]), i))
+        elif tipo_similitud == 2:
 
-    elif tipo_similitud == 2:
+            for i in range(len(matriz)):
+                if matriz[i][posicion[1]] != '-':
+                    lista_tuplas.append(
+                        (calcular_similitud_coseno(matriz[posicion[0]], matriz[i]), i))
 
-        for i in range(len(matriz)):
-            if matriz[i][posicion[1]] != '-':
-                lista_tuplas.append(
-                    (calcular_similitud_coseno(matriz[posicion[0]], matriz[i]), i))
+        elif tipo_similitud == 3:
 
-    elif tipo_similitud == 3:
+            for i in range(len(matriz)):
+                if matriz[i][posicion[1]] != '-':
+                    lista_tuplas.append(
+                        (calcular_similitud_distancia_euclídea(matriz[posicion[0]], matriz[i]), i))
 
-        for i in range(len(matriz)):
-            if matriz[i][posicion[1]] != '-':
-                lista_tuplas.append(
-                    (calcular_similitud_distancia_euclídea(matriz[posicion[0]], matriz[i]), i))
+        # Ordenar la lista de tuplas por similitud
+        lista_tuplas.sort(reverse=True)
 
-    # Ordenar la lista de tuplas por similitud
-    lista_tuplas.sort(reverse=True)
+        # Tomar los primeros k vecinos
+        lista_tuplas = lista_tuplas[:cantidad_vecinos]
 
-    # Tomar los primeros k vecinos
-    lista_tuplas = lista_tuplas[:cantidad_vecinos]
+        # Calcular la calificación predicha
+        numerador = 0.0
+        denominador = 0.0
+        for tupla in lista_tuplas:
+            numerador += tupla[0] * float(matriz[tupla[1]][posicion[1]])
+            denominador += abs(tupla[0])
 
-    # Calcular la calificación predicha
-    numerador = 0.0
-    denominador = 0.0
-    for tupla in lista_tuplas:
-        numerador += tupla[0] * float(matriz[tupla[1]][posicion[1]])
-        denominador += abs(tupla[0])
+        prediccion = numerador / denominador
+        return prediccion
 
-    prediccion = numerador / denominador
-    return prediccion
-
+    except Exception as e:
+        raise ValueError("Valores insuficientes en la matriz para realizar la predicción") from e
 
 def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tipo_similitud):
 
@@ -210,13 +216,9 @@ def calcular_media_usuario(array):
     media = sum(valores_array) / len(valores_array)
     return media
 
-# Función para imprimir la matriz
-
-
 def imprimir_matriz(matriz):
     for fila in matriz:
         print(' '.join(map(str, fila)))
-
 
 # Crear un objeto ArgumentParser
 parser = argparse.ArgumentParser(
