@@ -306,18 +306,18 @@ print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 imprimir_matriz(matriz)
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
-for i in range(len(matriz)):
-    for j in range(len(matriz[i])):
+# calcular leyendo de columna en columna entera antes de pasar a la siguiente
+for j in range(len(matriz[0])):
+    for i in range(len(matriz)):
         if matriz[i][j] == '-':
             posicion = (i, j)
             if tipo_prediccion == 1:
-                valor = calcular_prediccion_simple(
-                    matriz, cantidad_vecinos, (i, j), metrica)
-                matriz[i][j] = valor
+                matriz[i][j] = calcular_prediccion_simple(
+                    matriz, cantidad_vecinos, posicion, metrica)
             elif tipo_prediccion == 2:
-                valor = calcular_prediccion_diferencia_media(
-                    matriz, cantidad_vecinos, (i, j), metrica)
-                matriz[i][j] = valor
+                matriz[i][j] = calcular_prediccion_diferencia_media(
+                    matriz, cantidad_vecinos, posicion, metrica)
+                
 
 
 matriz = desnormalizar_matriz(matriz)
