@@ -279,11 +279,21 @@ for i in range(len(matriz)):
     for j in range(len(matriz[i])):
         if matriz[i][j] == '-':
             if tipo_prediccion == 1:
-                matriz[i][j] = round(calcular_prediccion_simple(
+                valor = round(calcular_prediccion_simple(
                     matriz, cantidad_vecinos, (i, j), metrica), 5)
+                if valor < calificacion_minima:
+                    valor = calificacion_minima
+                elif valor > calificacion_maxima:
+                    valor = calificacion_maxima
+                matriz[i][j] = valor
             elif tipo_prediccion == 2:
-                matriz[i][j] = round(calcular_prediccion_diferencia_media(
+                valor = round(calcular_prediccion_diferencia_media(
                     matriz, cantidad_vecinos, (i, j), metrica), 5)
+                if valor < calificacion_minima:
+                    valor = calificacion_minima
+                elif valor > calificacion_maxima:
+                    valor = calificacion_maxima
+                matriz[i][j] = valor
 
 matriz = desnormalizar_matriz(matriz)
 
