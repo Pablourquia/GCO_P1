@@ -2,6 +2,11 @@ import math
 import argparse
 
 # Función para leer la matriz desde un archivo
+
+posicion = []
+tuplas_guiones_calculados = []
+
+
 def leer_matriz_desde_archivo(nombre_archivo):
     matriz = []
 
@@ -22,7 +27,8 @@ def leer_matriz_desde_archivo(nombre_archivo):
                 if x != "-":
                     aux = float(x)
                     if aux < calificacion_minima or aux > calificacion_maxima:
-                        raise ValueError(f"Error: El valor {aux} no está dentro del rango permitido ({calificacion_minima} - {calificacion_maxima})")
+                        raise ValueError(
+                            f"Error: El valor {aux} no está dentro del rango permitido ({calificacion_minima} - {calificacion_maxima})")
                 fila.append(x)  # Guarde el valor tal como está en la matriz
 
             matriz.append(fila)
@@ -64,9 +70,11 @@ def calcular_coeficiente_de_correlacion(array1, array2):
         denom = math.sqrt(denom1) * math.sqrt(denom2)
         coefiente_pearson = num / denom
         return coefiente_pearson
-    
+
     except Exception as e:
-        raise ValueError("Valores insuficientes en la matriz para realizar la predicción error code:001") from e
+        raise ValueError(
+            "Valores insuficientes en la matriz para realizar la predicción error code:001") from e
+
 
 def calcular_similitud_distancia_euclídea(array1, array2):
     try:
@@ -78,7 +86,9 @@ def calcular_similitud_distancia_euclídea(array1, array2):
         distancia_euclidea = math.sqrt(suma)
         return distancia_euclidea
     except Exception as e:
-        raise ValueError("Valores insuficientes en la matriz para realizar la predicción error code:003") from e
+        raise ValueError(
+            "Valores insuficientes en la matriz para realizar la predicción error code:003") from e
+
 
 def calcular_similitud_coseno(array1, array2):
     try:
@@ -102,7 +112,9 @@ def calcular_similitud_coseno(array1, array2):
         similitud_coseno = numerador / denominador
         return similitud_coseno
     except Exception as e:
-        raise ValueError("Valores insuficientes en la matriz para realizar la predicción error code:002") from e
+        raise ValueError(
+            "Valores insuficientes en la matriz para realizar la predicción error code:002") from e
+
 
 def calcular_prediccion_simple(matriz, cantidad_vecinos, posicion, tipo_similitud):
     try:
@@ -131,20 +143,25 @@ def calcular_prediccion_simple(matriz, cantidad_vecinos, posicion, tipo_similitu
         lista_tuplas.sort(reverse=True)
 
         # Tomar los primeros k vecinos
-        lista_tuplas = lista_tuplas[:cantidad_vecinos]
+        lista_tuplas_seleccionado = lista_tuplas[:cantidad_vecinos]
 
         # Calcular la calificación predicha
         numerador = 0.0
         denominador = 0.0
-        for tupla in lista_tuplas:
+        for tupla in lista_tuplas_seleccionado:
             numerador += tupla[0] * float(matriz[tupla[1]][posicion[1]])
             denominador += abs(tupla[0])
 
         prediccion = numerador / denominador
+
+        tuplas_guiones_calculados.append(
+            (posicion, lista_tuplas, lista_tuplas_seleccionado, prediccion))
         return prediccion
 
     except Exception as e:
-        raise ValueError("Valores insuficientes en la matriz para realizar la predicción") from e
+        raise ValueError(
+            "Valores insuficientes en la matriz para realizar la predicción") from e
+
 
 def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tipo_similitud):
 
@@ -173,23 +190,27 @@ def calcular_prediccion_diferencia_media(matriz, cantidad_vecinos, posicion, tip
     lista_tuplas.sort(reverse=True)
 
     # Tomar los primeros k vecinos
-    lista_tuplas = lista_tuplas[:cantidad_vecinos]
+    lista_tuplas_seleccionado = lista_tuplas[:cantidad_vecinos]
 
     # Calcular la calificación predicha
 
     numerador = 0.0
     denominador = 0.0
-    for tupla in lista_tuplas:
+    for tupla in lista_tuplas_seleccionado:
         numerador += tupla[0] * (float(matriz[tupla[1]][posicion[1]]) -
                                  calcular_media_usuario(matriz[tupla[1]]))
         denominador += abs(tupla[0])
     prediccion = calcular_media_usuario(
         matriz[posicion[0]]) + (numerador / denominador)
+
+    tuplas_guiones_calculados.append(
+        (posicion, lista_tuplas, lista_tuplas_seleccionado, prediccion))
     return prediccion
 
+
 def normalizar_matriz(matriz, minima, maxima):
-    print ("minima: ", minima)
-    print ("maxima: ", maxima)
+    print("minima: ", minima)
+    print("maxima: ", maxima)
 
     for i in range(len(matriz)):
         for j in range(len(matriz[i])):
@@ -199,14 +220,22 @@ def normalizar_matriz(matriz, minima, maxima):
 
     return matriz
 
+
 def desnormalizar_matriz(matriz):
     for i in range(len(matriz)):
         for j in range(len(matriz[i])):
             if matriz[i][j] != '-':
                 valor = float(matriz[i][j])
-                matriz[i][j] = str((valor * (calificacion_maxima - calificacion_minima)) + calificacion_minima)
+                matriz[i][j] = str(round(
+                    (valor * (calificacion_maxima - calificacion_minima)) + calificacion_minima, 3))
 
     return matriz
+
+
+def desnormalizar_valor(valor):
+    valor = float(valor)
+    return str(round((valor * (calificacion_maxima - calificacion_minima)) + calificacion_minima, 3))
+
 
 def calcular_media_usuario(array):
     valores_array = []
@@ -216,9 +245,11 @@ def calcular_media_usuario(array):
     media = sum(valores_array) / len(valores_array)
     return media
 
+
 def imprimir_matriz(matriz):
     for fila in matriz:
         print(' '.join(map(str, fila)))
+
 
 # Crear un objeto ArgumentParser
 parser = argparse.ArgumentParser(
@@ -263,14 +294,14 @@ calificacion_minima, calificacion_maxima, matriz = leer_matriz_desde_archivo(
 
 # Imprimo la matriz y las calificaciones
 
-print(calificacion_maxima)
 print(calificacion_minima)
+print(calificacion_maxima)
 imprimir_matriz(matriz)
 
 print("matriz prediccion")
 # Calcular la prediccion para cada valor desconocido como float de 3 decimales y reemplazarlo en la matriz
 
-matriz = normalizar_matriz(matriz, calificacion_minima , calificacion_maxima)
+matriz = normalizar_matriz(matriz, calificacion_minima, calificacion_maxima)
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 imprimir_matriz(matriz)
 print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
@@ -278,22 +309,16 @@ print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 for i in range(len(matriz)):
     for j in range(len(matriz[i])):
         if matriz[i][j] == '-':
+            posicion = (i, j)
             if tipo_prediccion == 1:
-                valor = round(calcular_prediccion_simple(
-                    matriz, cantidad_vecinos, (i, j), metrica), 5)
-                if valor < calificacion_minima:
-                    valor = calificacion_minima
-                elif valor > calificacion_maxima:
-                    valor = calificacion_maxima
+                valor = calcular_prediccion_simple(
+                    matriz, cantidad_vecinos, (i, j), metrica)
                 matriz[i][j] = valor
             elif tipo_prediccion == 2:
-                valor = round(calcular_prediccion_diferencia_media(
-                    matriz, cantidad_vecinos, (i, j), metrica), 5)
-                if valor < calificacion_minima:
-                    valor = calificacion_minima
-                elif valor > calificacion_maxima:
-                    valor = calificacion_maxima
+                valor = calcular_prediccion_diferencia_media(
+                    matriz, cantidad_vecinos, (i, j), metrica)
                 matriz[i][j] = valor
+
 
 matriz = desnormalizar_matriz(matriz)
 
@@ -306,3 +331,11 @@ with open(nombre_archivo_salida, 'w') as archivo:
     archivo.write(str(calificacion_maxima) + '\n')
     for fila in matriz:
         archivo.write(' '.join(map(str, fila)) + '\n')
+    archivo.write("\n")
+    for tupla in tuplas_guiones_calculados:
+        archivo.write("Posicion: " + str(tupla[0]) + "\n")
+        archivo.write("Lista de tuplas: " + str(tupla[1]) + "\n")
+        archivo.write("Lista de tuplas seleccionadas: " + str(tupla[2]) + "\n")
+        archivo.write("Prediccion: " +
+                      desnormalizar_valor(str(tupla[3])) + "\n")
+        archivo.write("\n")
